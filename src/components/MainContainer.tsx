@@ -42,9 +42,9 @@ const MainContainer = ({ children }: PropsWithChildren) => {
           <div className="container-main">
             <Landing>{!isDesktopView && children}</Landing>
             <About />
-            <TechnicalSkills />
             <WhatIDo />
             <Career />
+            <TechnicalSkills />
             <Work />
             <Testimonials />
             {isDesktopView && (
