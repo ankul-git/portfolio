@@ -107,46 +107,51 @@ export class CustomSplitText {
   }
 
   private splitIntoLines(el: HTMLElement) {
-    const words = this.words.filter(w => el.contains(w));
-    if (words.length === 0) return;
+    const children = Array.from(el.childNodes);
+    if (children.length === 0) return;
 
-    const lines: HTMLElement[][] = [];
-    let currentLine: HTMLElement[] = [];
+    const lines: (Node | HTMLElement)[][] = [];
+    let currentLine: (Node | HTMLElement)[] = [];
     let lastTop = -1;
-    const threshold = 5;
+    const threshold = 2; // Tighter threshold for line identification
 
-    // Use a temporary flat array of words to determine lines
-    words.forEach((word) => {
-      const top = word.getBoundingClientRect().top;
-      if (lastTop === -1) lastTop = top;
-
-      if (Math.abs(top - lastTop) > threshold) {
-        if (currentLine.length > 0) lines.push(currentLine);
-        currentLine = [word];
-        lastTop = top;
+    children.forEach((child) => {
+      let top = -1;
+      if (child instanceof HTMLElement) {
+        top = child.getBoundingClientRect().top;
       } else {
-        currentLine.push(word);
+        // Find adjacent HTMLElement to determine line for text node
+        const prev = child.previousSibling as HTMLElement;
+        const next = child.nextSibling as HTMLElement;
+        if (prev && prev.getBoundingClientRect) top = prev.getBoundingClientRect().top;
+        else if (next && next.getBoundingClientRect) top = next.getBoundingClientRect().top;
+      }
+
+      if (top !== -1) {
+        if (lastTop === -1) lastTop = top;
+        if (Math.abs(top - lastTop) > threshold) {
+          if (currentLine.length > 0) lines.push(currentLine);
+          currentLine = [child];
+          lastTop = top;
+        } else {
+          currentLine.push(child);
+        }
+      } else {
+        currentLine.push(child);
       }
     });
     if (currentLine.length > 0) lines.push(currentLine);
 
-    // To avoid breaking nested structure, GSAP's SplitText usually flattens the DOM 
-    // when splitting into lines. We will do the same if lines are requested.
-    // This is the most reliable way to ensure the reveal animations work.
-    
     el.innerHTML = "";
     this.lines = [];
 
-    lines.forEach(lineWords => {
+    lines.forEach(lineNodes => {
       const lineSpan = document.createElement("span");
       lineSpan.style.display = "block";
       if (this.options.linesClass) lineSpan.className = this.options.linesClass;
       
-      lineWords.forEach((word, index) => {
-        lineSpan.appendChild(word);
-        if (index < lineWords.length - 1) {
-          lineSpan.appendChild(document.createTextNode(" "));
-        }
+      lineNodes.forEach(node => {
+        lineSpan.appendChild(node);
       });
       
       el.appendChild(lineSpan);
