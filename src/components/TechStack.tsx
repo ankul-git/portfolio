@@ -14,8 +14,6 @@ import {
 const sphereGeometry = new THREE.SphereGeometry(1, 28, 28);
 
 const techList = [
-  "TECHNICAL",
-  "SKILLS",
   "AWS",
   "Kubernetes",
   "Terraform",
@@ -202,6 +200,7 @@ const TechStack = () => {
 
   return (
     <div className="techstack">
+      <h2>TECHNICAL EXPERTISE</h2>
 
       <Canvas
         shadows

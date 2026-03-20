@@ -31,14 +31,12 @@
   cursor: pointer;
 }
 .navbar-connect {
-  position: absolute;
+  position: relative;
   display: none;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
   font-size: 15px;
   letter-spacing: 1px;
   font-weight: 500;
+  margin-right: 20px;
 }
 .navbar-title {
   font-weight: 700;

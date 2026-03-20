@@ -34,14 +34,15 @@ const Navbar = () => {
         <a href="/#" className="navbar-title" data-cursor="disable">
           AK
         </a>
-        <a
-          href="mailto:ankulkumar233@gmail.com"
-          className="navbar-connect"
-          data-cursor="disable"
-        >
-          ankulkumar233@gmail.com
-        </a>
-        <ul>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <a
+            href="mailto:ankulkumar233@gmail.com"
+            className="navbar-connect"
+            data-cursor="disable"
+          >
+            ankulkumar233@gmail.com
+          </a>
+          <ul>
           <li>
             <a data-href="#about" href="#about">
               <HoverLinks text="ABOUT" />
@@ -69,6 +70,7 @@ const Navbar = () => {
           </li>
         </ul>
       </div>
+    </div>
 
       <div className="landing-circle1"></div>
       <div className="landing-circle2"></div>
