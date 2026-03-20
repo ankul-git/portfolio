@@ -14,6 +14,8 @@ import {
 const sphereGeometry = new THREE.SphereGeometry(1, 28, 28);
 
 const techList = [
+  "TECHNICAL",
+  "SKILLS",
   "AWS",
   "Kubernetes",
   "Terraform",
@@ -97,17 +99,18 @@ function SphereGeo({
         <Html center>
           <div
             style={{
-              color: "#fff",
-              background: "rgba(255, 255, 255, 0.1)",
+              color: tech === "TECHNICAL" || tech === "SKILLS" ? "#000" : "#fff",
+              background: tech === "TECHNICAL" || tech === "SKILLS" ? "var(--accentColor)" : "rgba(255, 255, 255, 0.1)",
               backdropFilter: "blur(10px)",
-              padding: "8px 16px",
+              padding: tech === "TECHNICAL" || tech === "SKILLS" ? "12px 24px" : "8px 16px",
               borderRadius: "20px",
-              fontWeight: "600",
-              fontSize: "16px",
+              fontWeight: "700",
+              fontSize: tech === "TECHNICAL" || tech === "SKILLS" ? "24px" : "16px",
               textShadow: "0 2px 10px rgba(0,0,0,0.5)",
               border: "1px solid rgba(255,255,255,0.2)",
               pointerEvents: "none",
               whiteSpace: "nowrap",
+              boxShadow: tech === "TECHNICAL" || tech === "SKILLS" ? "0 0 20px var(--accentColor)" : "none",
             }}
           >
             {tech}
@@ -199,10 +202,6 @@ const TechStack = () => {
 
   return (
     <div className="techstack">
-      <div className="tech-header">
-        <h2>Technical</h2>
-        <h2>Expertise</h2>
-      </div>
 
       <Canvas
         shadows
