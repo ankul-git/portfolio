@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { useRef, useMemo, useState, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Environment } from "@react-three/drei";
+import { Environment, Html } from "@react-three/drei";
 import { EffectComposer, N8AO } from "@react-three/postprocessing";
 import {
   BallCollider,
@@ -11,28 +11,34 @@ import {
   RapierRigidBody,
 } from "@react-three/rapier";
 
-const textureLoader = new THREE.TextureLoader();
-const imageUrls = [
-  "/images/react2.webp",
-  "/images/next2.webp",
-  "/images/node2.webp",
-  "/images/express.webp",
-  "/images/mongo.webp",
-  "/images/mysql.webp",
-  "/images/typescript.webp",
-  "/images/javascript.webp",
-];
-const textures = imageUrls.map((url) => textureLoader.load(url));
-
 const sphereGeometry = new THREE.SphereGeometry(1, 28, 28);
 
-const spheres = [...Array(30)].map(() => ({
-  scale: [0.7, 1, 0.8, 1, 1][Math.floor(Math.random() * 5)],
+const techList = [
+  "AWS",
+  "Kubernetes",
+  "Terraform",
+  "Ansible",
+  "Helm",
+  "GitHub Actions",
+  "Jenkins",
+  "ArgoCD",
+  "Prometheus",
+  "Grafana",
+  "ELK Stack",
+  "Python",
+  "Bash",
+  "Scaleway",
+];
+
+const spheres = techList.map((tech) => ({
+  tech,
+  scale: [0.9, 1, 1.1][Math.floor(Math.random() * 3)],
 }));
 
 type SphereProps = {
   vec?: THREE.Vector3;
   scale: number;
+  tech: string;
   r?: typeof THREE.MathUtils.randFloatSpread;
   material: THREE.MeshPhysicalMaterial;
   isActive: boolean;
@@ -41,6 +47,7 @@ type SphereProps = {
 function SphereGeo({
   vec = new THREE.Vector3(),
   scale,
+  tech,
   r = THREE.MathUtils.randFloatSpread,
   material,
   isActive,
@@ -86,7 +93,27 @@ function SphereGeo({
         geometry={sphereGeometry}
         material={material}
         rotation={[0.3, 1, 1]}
-      />
+      >
+        <Html center>
+          <div
+            style={{
+              color: "#fff",
+              background: "rgba(255, 255, 255, 0.1)",
+              backdropFilter: "blur(10px)",
+              padding: "8px 16px",
+              borderRadius: "20px",
+              fontWeight: "600",
+              fontSize: "16px",
+              textShadow: "0 2px 10px rgba(0,0,0,0.5)",
+              border: "1px solid rgba(255,255,255,0.2)",
+              pointerEvents: "none",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {tech}
+          </div>
+        </Html>
+      </mesh>
     </RigidBody>
   );
 }
@@ -152,16 +179,20 @@ const TechStack = () => {
     };
   }, []);
   const materials = useMemo(() => {
-    return textures.map(
-      (texture) =>
+    const colors = ["#0c142e", "#10091e", "#051f22", "#1e0b16", "#070b12"];
+    return colors.map(
+      (color) =>
         new THREE.MeshPhysicalMaterial({
-          map: texture,
-          emissive: "#ffffff",
-          emissiveMap: texture,
-          emissiveIntensity: 0.3,
+          color: color,
+          emissive: color,
+          emissiveIntensity: 0.05,
           metalness: 0.5,
-          roughness: 1,
-          clearcoat: 0.1,
+          roughness: 0.1,
+          transmission: 0.7,
+          ior: 1.5,
+          thickness: 1,
+          clearcoat: 1,
+          clearcoatRoughness: 0.1,
         })
     );
   }, []);
