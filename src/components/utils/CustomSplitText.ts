@@ -47,53 +47,61 @@ export class CustomSplitText {
     types: string[],
     classes: { linesClass: string; wordsClass: string; charsClass: string }
   ) {
-    const text = el.textContent || "";
+    const children = Array.from(el.childNodes);
     el.innerHTML = "";
 
-    const words: HTMLElement[] = [];
-    const chars: HTMLElement[] = [];
+    children.forEach((node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        this.splitTextNode(el, node as Text, types, classes);
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        const clonedElement = node.cloneNode(false) as HTMLElement;
+        el.appendChild(clonedElement);
+        this.splitElement(clonedElement, types, classes);
+      }
+    });
 
-    // Split text into tokens (words and whitespace)
+    if (types.includes("lines") && el === this.elements.find(e => e === el)) { // Only top-level for lines
+      this.splitIntoLines(el, classes.linesClass);
+    }
+  }
+
+  private splitTextNode(
+    parent: HTMLElement,
+    node: Text,
+    types: string[],
+    classes: { linesClass: string; wordsClass: string; charsClass: string }
+  ) {
+    const text = node.textContent || "";
     const tokens = text.split(/(\s+)/);
 
     tokens.forEach((token) => {
       if (token === "") return;
       
       if (/\s+/.test(token)) {
-        // It's whitespace
-        el.appendChild(document.createTextNode(token));
+        parent.appendChild(document.createTextNode(token));
         return;
       }
 
-      // It's a word
       const wordSpan = document.createElement("span");
       wordSpan.style.display = "inline-block";
       if (classes.wordsClass) wordSpan.className = classes.wordsClass;
       
       if (types.includes("chars")) {
-        const charArray = token.split("");
-        charArray.forEach((char) => {
+        token.split("").forEach((char) => {
           const charSpan = document.createElement("span");
           charSpan.style.display = "inline-block";
           charSpan.textContent = char;
           if (classes.charsClass) charSpan.className = classes.charsClass;
           wordSpan.appendChild(charSpan);
-          chars.push(charSpan);
+          this.chars.push(charSpan);
         });
       } else {
         wordSpan.textContent = token;
       }
 
-      el.appendChild(wordSpan);
-      words.push(wordSpan);
+      parent.appendChild(wordSpan);
+      this.words.push(wordSpan);
     });
-
-    this.words.push(...words);
-    this.chars.push(...chars);
-
-    if (types.includes("lines")) {
-      this.splitIntoLines(el, classes.linesClass);
-    }
   }
 
   private splitIntoLines(el: HTMLElement, linesClass: string) {
