@@ -199,7 +199,10 @@ const TechStack = () => {
 
   return (
     <div className="techstack">
-      <h2> My Techstack</h2>
+      <div className="tech-header">
+        <h2>Technical</h2>
+        <h2>Expertise</h2>
+      </div>
 
       <Canvas
         shadows
