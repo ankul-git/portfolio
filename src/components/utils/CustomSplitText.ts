@@ -11,13 +11,19 @@ export class CustomSplitText {
   words: HTMLElement[] = [];
   lines: HTMLElement[] = [];
   originalContent: Map<HTMLElement, string> = new Map();
+  options: SplitTextOptions;
 
   constructor(
     target: string | string[] | HTMLElement | HTMLElement[] | NodeList,
     options: SplitTextOptions = {}
   ) {
-    const { type = "chars,words,lines", linesClass = "", wordsClass = "", charsClass = "" } = options;
-    const types = type.split(",").map((t) => t.trim());
+    this.options = {
+      type: "chars,words,lines",
+      linesClass: "",
+      wordsClass: "",
+      charsClass: "",
+      ...options
+    };
 
     // Resolve target to HTML elements
     if (typeof target === "string") {
@@ -38,122 +44,109 @@ export class CustomSplitText {
 
     this.elements.forEach((el) => {
       this.originalContent.set(el, el.innerHTML);
-      this.splitElement(el, types, { linesClass, wordsClass, charsClass });
+      this.splitElement(el);
     });
   }
 
-  private splitElement(
-    el: HTMLElement,
-    types: string[],
-    classes: { linesClass: string; wordsClass: string; charsClass: string }
-  ) {
-    const children = Array.from(el.childNodes);
-    el.innerHTML = "";
-
-    children.forEach((node) => {
+  private splitElement(el: HTMLElement) {
+    const types = this.options.type?.split(",").map(t => t.trim()) || [];
+    
+    const processNode = (node: Node) => {
       if (node.nodeType === Node.TEXT_NODE) {
-        this.splitTextNode(el, node as Text, types, classes);
-      } else if (node.nodeType === Node.ELEMENT_NODE) {
-        const clonedElement = node.cloneNode(false) as HTMLElement;
-        el.appendChild(clonedElement);
-        this.splitElement(clonedElement, types, classes);
-      }
-    });
+        const text = node.textContent || "";
+        if (text.trim() === "" && text.length > 0) return; // Keep whitespace but don't split empty
 
-    if (types.includes("lines") && el === this.elements.find(e => e === el)) { // Only top-level for lines
-      this.splitIntoLines(el, classes.linesClass);
+        const fragment = document.createDocumentFragment();
+        const tokens = text.split(/(\s+)/);
+
+        tokens.forEach((token) => {
+          if (token === "") return;
+          if (/\s+/.test(token)) {
+            fragment.appendChild(document.createTextNode(token));
+            return;
+          }
+
+          const wordSpan = document.createElement("span");
+          wordSpan.style.display = "inline-block";
+          if (this.options.wordsClass) wordSpan.className = this.options.wordsClass;
+          
+          if (types.includes("chars")) {
+            token.split("").forEach((char) => {
+              const charSpan = document.createElement("span");
+              charSpan.style.display = "inline-block";
+              charSpan.textContent = char;
+              if (this.options.charsClass) charSpan.className = this.options.charsClass;
+              wordSpan.appendChild(charSpan);
+              this.chars.push(charSpan);
+            });
+          } else {
+            wordSpan.textContent = token;
+          }
+
+          fragment.appendChild(wordSpan);
+          this.words.push(wordSpan);
+        });
+
+        node.parentNode?.replaceChild(fragment, node);
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        // Don't recurse into our own created spans
+        const element = node as HTMLElement;
+        if (element.className !== this.options.wordsClass && 
+            element.className !== this.options.charsClass && 
+            element.className !== this.options.linesClass) {
+          Array.from(element.childNodes).forEach(processNode);
+        }
+      }
+    };
+
+    Array.from(el.childNodes).forEach(processNode);
+
+    if (types.includes("lines")) {
+      this.splitIntoLines(el);
     }
   }
 
-  private splitTextNode(
-    parent: HTMLElement,
-    node: Text,
-    types: string[],
-    classes: { linesClass: string; wordsClass: string; charsClass: string }
-  ) {
-    const text = node.textContent || "";
-    const tokens = text.split(/(\s+)/);
+  private splitIntoLines(el: HTMLElement) {
+    const words = this.words.filter(w => el.contains(w));
+    if (words.length === 0) return;
 
-    tokens.forEach((token) => {
-      if (token === "") return;
-      
-      if (/\s+/.test(token)) {
-        parent.appendChild(document.createTextNode(token));
-        return;
-      }
-
-      const wordSpan = document.createElement("span");
-      wordSpan.style.display = "inline-block";
-      if (classes.wordsClass) wordSpan.className = classes.wordsClass;
-      
-      if (types.includes("chars")) {
-        token.split("").forEach((char) => {
-          const charSpan = document.createElement("span");
-          charSpan.style.display = "inline-block";
-          charSpan.textContent = char;
-          if (classes.charsClass) charSpan.className = classes.charsClass;
-          wordSpan.appendChild(charSpan);
-          this.chars.push(charSpan);
-        });
-      } else {
-        wordSpan.textContent = token;
-      }
-
-      parent.appendChild(wordSpan);
-      this.words.push(wordSpan);
-    });
-  }
-
-  private splitIntoLines(el: HTMLElement, linesClass: string) {
-    const children = Array.from(el.childNodes);
-    const lines: (Node | HTMLElement)[][] = [];
-    let currentLine: (Node | HTMLElement)[] = [];
+    const lines: HTMLElement[][] = [];
+    let currentLine: HTMLElement[] = [];
     let lastTop = -1;
     const threshold = 5;
 
-    children.forEach((child) => {
-      let forceNewLine = false;
-      let top = -1;
+    // Use a temporary flat array of words to determine lines
+    words.forEach((word) => {
+      const top = word.getBoundingClientRect().top;
+      if (lastTop === -1) lastTop = top;
 
-      if (child instanceof HTMLElement) {
-        const rect = child.getBoundingClientRect();
-        top = rect.top;
-        
-        // Force new line for block elements or BR
-        const style = window.getComputedStyle(child);
-        if (style.display === "block" || style.display === "flex" || child.tagName === "BR" || child.tagName === "DIV") {
-          forceNewLine = true;
-        }
-
-        if (lastTop === -1) lastTop = top;
-
-        if (forceNewLine || Math.abs(top - lastTop) > threshold) {
-          if (currentLine.length > 0) lines.push(currentLine);
-          currentLine = [child];
-          lastTop = top;
-        } else {
-          currentLine.push(child);
-        }
+      if (Math.abs(top - lastTop) > threshold) {
+        if (currentLine.length > 0) lines.push(currentLine);
+        currentLine = [word];
+        lastTop = top;
       } else {
-        // Text nodes (whitespace)
-        currentLine.push(child);
+        currentLine.push(word);
       }
     });
-
     if (currentLine.length > 0) lines.push(currentLine);
 
+    // To avoid breaking nested structure, GSAP's SplitText usually flattens the DOM 
+    // when splitting into lines. We will do the same if lines are requested.
+    // This is the most reliable way to ensure the reveal animations work.
+    
     el.innerHTML = "";
     this.lines = [];
 
-    lines.forEach((nodes) => {
-      if (nodes.length === 0) return;
-      
+    lines.forEach(lineWords => {
       const lineSpan = document.createElement("span");
       lineSpan.style.display = "block";
-      if (linesClass) lineSpan.className = linesClass;
+      if (this.options.linesClass) lineSpan.className = this.options.linesClass;
       
-      nodes.forEach((node) => {
-        lineSpan.appendChild(node);
+      lineWords.forEach((word, index) => {
+        lineSpan.appendChild(word);
+        if (index < lineWords.length - 1) {
+          lineSpan.appendChild(document.createTextNode(" "));
+        }
       });
       
       el.appendChild(lineSpan);
