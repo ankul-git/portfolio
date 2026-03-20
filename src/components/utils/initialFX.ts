@@ -1,6 +1,6 @@
-import { SplitText } from "gsap-trial/SplitText";
+import { CustomSplitText as SplitText } from "./CustomSplitText";
 import gsap from "gsap";
-import { smoother } from "../Navbar";
+import { smoother } from "./lenisScroll";
 
 export function initialFX() {
   document.body.style.overflowY = "auto";
