@@ -139,7 +139,80 @@ const WhatIDo = () => {
                 <div className="what-tags">Helm</div>
                 <div className="what-tags">ELK Stack</div>
                 <div className="what-tags">Jenkins</div>
-                <div className="what-tags">Python</div>
+              </div>
+              <div className="what-arrow"></div>
+            </div>
+          </div>
+          <div
+            className="what-content what-noTouch"
+            ref={(el) => setRef(el, 2)}
+          >
+            <div className="what-border1">
+              <svg height="100%">
+                <line
+                  x1="0"
+                  y1="100%"
+                  x2="100%"
+                  y2="100%"
+                  stroke="white"
+                  strokeWidth="2"
+                  strokeDasharray="6,6"
+                />
+              </svg>
+            </div>
+            <div className="what-corner"></div>
+            <div className="what-content-in">
+              <h3>PLATFORM ENGINEERING</h3>
+              <h4>Developer Productivity & IDPs</h4>
+              <p>
+                Building internal developer platforms (IDP) to empower engineers with self-service infrastructure, reducing lead time and cognitive load.
+              </p>
+              <h5>Skillset & tools</h5>
+              <div className="what-content-flex">
+                <div className="what-tags">Backstage</div>
+                <div className="what-tags">Crossplane</div>
+                <div className="what-tags">Internal Tooling</div>
+                <div className="what-tags">API Design</div>
+                <div className="what-tags">Go</div>
+                <div className="what-tags">CoreDNS</div>
+                <div className="what-tags">Istio</div>
+              </div>
+              <div className="what-arrow"></div>
+            </div>
+          </div>
+          <div
+            className="what-content what-noTouch"
+            ref={(el) => setRef(el, 3)}
+          >
+            <div className="what-border1">
+              <svg height="100%">
+                <line
+                  x1="0"
+                  y1="100%"
+                  x2="100%"
+                  y2="100%"
+                  stroke="white"
+                  strokeWidth="2"
+                  strokeDasharray="6,6"
+                />
+              </svg>
+            </div>
+            <div className="what-corner"></div>
+            <div className="what-content-in">
+              <h3>SECURITY & COMPLIANCE</h3>
+              <h4>DevSecOps & Zero Trust</h4>
+              <p>
+                Integrating security into every stage of the lifecycle. Implementing vulnerability scanning, secrets management, and zero-trust mesh.
+              </p>
+              <h5>Skillset & tools</h5>
+              <div className="what-content-flex">
+                <div className="what-tags">HashiCorp Vault</div>
+                <div className="what-tags">Trivy</div>
+                <div className="what-tags">Falco</div>
+                <div className="what-tags">OPA</div>
+                <div className="what-tags">RBAC</div>
+                <div className="what-tags">Networking</div>
+                <div className="what-tags">Linkerd</div>
               </div>
               <div className="what-arrow"></div>
             </div>
