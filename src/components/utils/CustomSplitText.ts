@@ -109,16 +109,25 @@ export class CustomSplitText {
     const lines: (Node | HTMLElement)[][] = [];
     let currentLine: (Node | HTMLElement)[] = [];
     let lastTop = -1;
-
-    // Use a small buffer to handle sub-pixel differences
     const threshold = 5;
 
     children.forEach((child) => {
+      let forceNewLine = false;
+      let top = -1;
+
       if (child instanceof HTMLElement) {
-        const top = child.offsetTop;
+        const rect = child.getBoundingClientRect();
+        top = rect.top;
+        
+        // Force new line for block elements or BR
+        const style = window.getComputedStyle(child);
+        if (style.display === "block" || style.display === "flex" || child.tagName === "BR" || child.tagName === "DIV") {
+          forceNewLine = true;
+        }
+
         if (lastTop === -1) lastTop = top;
 
-        if (Math.abs(top - lastTop) > threshold) {
+        if (forceNewLine || Math.abs(top - lastTop) > threshold) {
           if (currentLine.length > 0) lines.push(currentLine);
           currentLine = [child];
           lastTop = top;
@@ -126,7 +135,7 @@ export class CustomSplitText {
           currentLine.push(child);
         }
       } else {
-        // For text nodes (spaces), append to the current line
+        // Text nodes (whitespace)
         currentLine.push(child);
       }
     });
@@ -137,6 +146,8 @@ export class CustomSplitText {
     this.lines = [];
 
     lines.forEach((nodes) => {
+      if (nodes.length === 0) return;
+      
       const lineSpan = document.createElement("span");
       lineSpan.style.display = "block";
       if (linesClass) lineSpan.className = linesClass;
